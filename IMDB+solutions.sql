@@ -368,13 +368,25 @@ GROUP BY median_rating;
 -- Type your code below:
 -- Ans: Using LIKE operator and SUM of total votes using CASE statements we can get the number of votes for both languages.
 
-SELECT
-	SUM(CASE WHEN languages LIKE '%german%' THEN total_votes END) AS german_movie_votes,
-    SUM(CASE WHEN languages like '%italian%' THEN total_votes END) AS italian_movie_votes
-FROM ratings r
-	INNER JOIN movie m 
-    ON r.movie_id = m.id;
-
+WITH votes_summary AS
+(
+SELECT 
+	COUNT(CASE WHEN LOWER(m.languages) LIKE '%german%' THEN m.id END) AS german_movie_count,
+	COUNT(CASE WHEN LOWER(m.languages) LIKE '%italian%' THEN m.id END) AS italian_movie_count,
+	SUM(CASE WHEN LOWER(m.languages) LIKE '%german%' THEN r.total_votes END) AS german_movie_votes,
+	SUM(CASE WHEN LOWER(m.languages) LIKE '%italian%' THEN r.total_votes END) AS italian_movie_votes
+FROM
+    movie AS m 
+	    INNER JOIN
+	ratings AS r 
+		ON m.id = r.movie_id
+)
+SELECT 
+    ROUND(german_movie_votes / german_movie_count, 2) AS german_votes_per_movie,
+    ROUND(italian_movie_votes / italian_movie_count, 2) AS italian_votes_per_movie
+FROM
+    votes_summary
+    
 -- Answer is Yes
 
 /* Now that you have analysed the movies, genres and ratings tables, let us now analyse another table, the names table. 
